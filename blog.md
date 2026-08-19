@@ -1,5 +1,7 @@
 # Blog
 Throughout this course, I will write posts about data science topics I am interested in.
 ## Blog 1
-Coming soon.
-
+Hi! Welcome to my very first blog. Our question of the day is, Why is learning data science in social and interdisciplinary context matter?
+(1) Why model social topics and people? Statistics and data only show the 'numbers' or 'how' side of data science. Social topics and people give the analytical side. The "why?" and "so what do we do about that?" Modeling people without that context would essentially be socially meaningless conclusions. Humans are shaped by history and societal norms. 
+(2) At this point, what responsibilities can you think of that come with using data about people? I think specifically the way our data is used is that most important. It is constantly used against us to profit off and manipulate us.  I think consent is the most important aspect. Are we as users aware that it is being used and how is it being used? Is it safely contained or is it being sold off to other people and businesses.  I think something that is also overlooked is lack of representation. Whose data is missing? Who isn't being represented in the data?
+(3) What are you hoping to better understand through this course? I am honestly hoping to strengthen my coding skills but also strengthen my ability to research and use data to create new projects and ideas so I am very excited for what this class entails! My goal as a double major in political science and data science is go into data privacy and health law so I think this course will create a strong base and good habits that will follow me to law school.

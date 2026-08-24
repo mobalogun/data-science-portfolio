@@ -5,5 +5,5 @@ About Me: Hi! My name is Mo, I am a junior at UNC Charlotte majoring in Politica
 Welcome to my Data Science Studio portfolio.
 This website will document my learning and projects throughout the semester.
 
-[Blog] (blog.md) 
-[Projects] (Projects.md)
+[Blog](blog.md) 
+[Projects](Projects.md)

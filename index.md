@@ -7,4 +7,4 @@ This website will document my learning and projects throughout the semester.
 
 [Blog](blog1.md) 
 
-[Projects](Projects.md)
+[Projects](projects.md)

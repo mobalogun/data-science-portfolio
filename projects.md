@@ -5,6 +5,8 @@ This section documents my data science projects, research questions, and data st
 
 ## Project 1: Voter ID Laws and Voter Turnout
 
+**Jump to:** [Problem Definition](#1-problem-definition) · [Data Description](#2-data-description) · [Data Cleaning](#3-data-cleaning-and-preparation) · [Visualizations](#4-visualizations-and-insights) · [Storytelling](#5-storytelling-and-narrative) · [Limitations](#6-limitations-ethics-and-reflection) · [Code & Sources](#7-code-and-transparency)
+
 ### 1. Problem Definition
 
 **Research question:** Is there a relationship between the stringency of a state's voter ID law and its voter turnout rate in U.S. presidential elections?
@@ -53,13 +55,17 @@ Three raw sources were pulled and cleaned independently before merging:
 
 **Chart 1: Voter Turnout by ID Law Stringency, 2012 vs. 2020 (scatter)**
 
-`[FILL IN: embed chart1_turnout_vs_stringency_scatter.png here]`
+<p align="center">
+  <img src="chart1_turnout_vs_stringency_scatter.png" alt="Scatter plot of turnout rate vs voter ID stringency tier, colored by election year" width="600">
+</p>
 
 Each point is one state in one election year. Turnout is generally higher and more spread out among no-ID states, while strict-ID states cluster somewhat lower.
 
 **Chart 2: Average Turnout by Stringency Tier, 2012 vs. 2020 (bar)**
 
-`[FILL IN: embed chart2_avg_turnout_by_tier_bar.png here]`
+<p align="center">
+  <img src="chart2_avg_turnout_by_tier_bar.png" alt="Bar chart of average turnout by voter ID stringency tier for 2012 and 2020" width="600">
+</p>
 
 Average turnout drops in a consistent step pattern as stringency increases, in both years:
 
@@ -73,7 +79,9 @@ The gap between "no ID" and "strict ID" states is nearly identical across the tw
 
 ### 5. Storytelling and Narrative
 
-The headline finding is a consistent, modest negative association between voter ID stringency and turnout: states with no ID requirement out-turned states with non-strict requirements, which in turn out-turned states with strict requirements — and this ordering held in both 2012 and 2020 individually, not just on average across both years combined.
+> **Headline finding:** Turnout drops step-wise as voter ID stringency increases in both 2012 and 2020 — but that pattern shrinks by more than 75% once state income and education levels are controlled for, suggesting socioeconomic differences between states explain most of the raw gap.
+
+States with no ID requirement out-turned states with non-strict requirements, which in turn out-turned states with strict requirements — and this ordering held in both 2012 and 2020 individually, not just on average across both years combined.
 
 However, this raw pattern does not hold up well once income and education are accounted for. A simple regression of turnout on stringency tier alone gives a coefficient of -2.33 (each step up in stringency associated with a 2.33-point drop in turnout, R² = 0.045 — a weak fit on its own). Once median household income and percent with a bachelor's degree are added as controls, the stringency coefficient shrinks to -0.49, less than a quarter of its original size, while the model's overall fit improves substantially (R² = 0.284). The correlation matrix explains why: income and education are strongly correlated with each other (r = 0.822) and both are positively correlated with turnout (r = 0.509 and 0.505) while negatively correlated with stringency (r = -0.263 and -0.366). In other words, states with stricter ID laws also tend to have lower income and education levels on average, and those factors — not the ID law itself — appear to account for most of the raw turnout gap. This substantially complicates the initial narrative: the data are more consistent with voter ID stringency being a marker of broader state-level socioeconomic differences than with ID laws being a major independent driver of turnout differences.
 

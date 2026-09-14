@@ -1,0 +1,945 @@
+"""
+Checks whether the turnout ~ stringency relationship holds up once you
+account for income and education -- i.e., is this just proxying for
+richer/more-educated states happening to have looser ID laws?
+
+Uses plain OLS via numpy (no statsmodels dependency needed).
+"""
+
+import numpy as np
+import pandas as pd
+
+def ols(X, y):
+    """Simple OLS with an intercept column added automatically."""
+    X = np.column_stack([np.ones(len(X)), X])
+    coefs, residuals, rank, sv = np.linalg.lstsq(X, y, rcond=None)
+    y_pred = X @ coefs
+    ss_res = np.sum((y - y_pred) ** 2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
+    r_squared = 1 - ss_res / ss_tot
+    return coefs, r_squared
+
+def main():
+    df = pd.read_csv("analysis_dataset.csv").dropna(
+        subset=["turnout_rate", "id_stringency_tier", "median_hh_income", "pct_bachelors_or_higher"]
+    )
+
+    print(f"N = {len(df)} state-year observations\n")
+
+    # --- Correlation matrix ---
+    corr = df[["turnout_rate", "id_stringency_tier", "median_hh_income", "pct_bachelors_or_higher"]].corr()
+    print("Correlation matrix:")
+    print(corr.round(3))
+    print()
+
+    # --- Model 1: turnout ~ stringency only ---
+    X1 = df[["id_stringency_tier"]].values
+    y = df["turnout_rate"].values
+    coefs1, r2_1 = ols(X1, y)
+    print("Model 1: turnout_rate ~ id_stringency_tier")
+    print(f"  Intercept: {coefs1[0]:.2f}")
+    print(f"  Stringency coefficient: {coefs1[1]:.2f}  (R² = {r2_1:.3f})")
+    print(f"  Interpretation: each step up in stringency tier is associated with "
+          f"a {coefs1[1]:.2f} percentage-point change in turnout, before controls.\n")
+
+    # --- Model 2: turnout ~ stringency + income + education ---
+    X2 = df[["id_stringency_tier", "median_hh_income", "pct_bachelors_or_higher"]].values
+    coefs2, r2_2 = ols(X2, y)
+    print("Model 2: turnout_rate ~ id_stringency_tier + median_hh_income + pct_bachelors_or_higher")
+    print(f"  Intercept: {coefs2[0]:.2f}")
+    print(f"  Stringency coefficient: {coefs2[1]:.4f}")
+    print(f"  Income coefficient (per $1): {coefs2[2]:.5f}")
+    print(f"  Education coefficient (per pct point): {coefs2[3]:.3f}")
+    print(f"  R² = {r2_2:.3f}\n")
+
+    print("--- What to look for ---")
+    print(f"Stringency coefficient WITHOUT controls: {coefs1[1]:.2f}")
+    print(f"Stringency coefficient WITH controls:    {coefs2[1]:.2f}")
+    if abs(coefs2[1]) < abs(coefs1[1]) * 0.5:
+        print("-> The stringency effect shrinks a lot once income/education are added.")
+        print("   This suggests income/education may explain much of the raw pattern.")
+    elif np.sign(coefs2[1]) != np.sign(coefs1[1]):
+        print("-> The stringency effect FLIPS SIGN once controls are added.")
+        print("   This is an important finding for your limitations/storytelling section.")
+    else:
+        print("-> The stringency effect holds up reasonably well even with controls,")
+        print("   which strengthens (but does not prove) your research narrative.")
+
+if __name__ == "__main__":
+    main()
+"""
+Generates the two visualizations for the projects.md writeup:
+  1. Scatter: turnout rate vs. voter ID stringency tier (colored by year)
+  2. Bar chart: average turnout by stringency tier, 2012 vs 2020
+
+Run after merge_data.py has produced analysis_dataset.csv.
+Outputs two PNG files you can embed directly in projects.md.
+"""
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def main():
+    df = pd.read_csv("analysis_dataset.csv")
+
+    # ---------- Chart 1: scatter, turnout vs. stringency tier ----------
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    colors = {2012: "#4C72B0", 2020: "#DD8452"}
+    for year, group in df.groupby("year"):
+        # jitter the x position slightly so points at the same tier don't
+        # all stack directly on top of each other
+        jitter = (group.index % 7 - 3) * 0.03
+        ax.scatter(
+            group["id_stringency_tier"] + jitter,
+            group["turnout_rate"],
+            alpha=0.7,
+            label=str(year),
+            color=colors.get(year, "gray"),
+        )
+
+    ax.set_xticks([0, 1, 2])
+    ax.set_xticklabels(["No ID\nrequired", "ID requested/\nnon-strict", "Strict ID\nrequired"])
+    ax.set_xlabel("Voter ID Stringency Tier")
+    ax.set_ylabel("Turnout Rate (% of voting-eligible population)")
+    ax.set_title("Voter Turnout by ID Law Stringency, 2012 vs. 2020")
+    ax.legend(title="Election Year")
+    ax.grid(axis="y", alpha=0.3)
+
+    fig.tight_layout()
+    fig.savefig("chart1_turnout_vs_stringency_scatter.png", dpi=150)
+    print("Saved chart1_turnout_vs_stringency_scatter.png")
+
+    # ---------- Chart 2: bar chart, avg turnout by tier, 2012 vs 2020 ----------
+    avg_turnout = (
+        df.groupby(["id_stringency_tier", "year"])["turnout_rate"]
+        .mean()
+        .unstack("year")
+    )
+
+    fig2, ax2 = plt.subplots(figsize=(8, 6))
+    avg_turnout.plot(kind="bar", ax=ax2, color=[colors.get(c, "gray") for c in avg_turnout.columns])
+
+    ax2.set_xticklabels(["No ID\nrequired", "ID requested/\nnon-strict", "Strict ID\nrequired"], rotation=0)
+    ax2.set_xlabel("Voter ID Stringency Tier")
+    ax2.set_ylabel("Average Turnout Rate (%)")
+    ax2.set_title("Average Turnout by Stringency Tier: 2012 vs. 2020")
+    ax2.legend(title="Election Year")
+    ax2.grid(axis="y", alpha=0.3)
+
+    # annotate bars with the actual values
+    for container in ax2.containers:
+        ax2.bar_label(container, fmt="%.1f", padding=2)
+
+    fig2.tight_layout()
+    fig2.savefig("chart2_avg_turnout_by_tier_bar.png", dpi=150)
+    print("Saved chart2_avg_turnout_by_tier_bar.png")
+
+    # Print the underlying numbers too, useful for your narrative section
+    print("\nAverage turnout by tier and year:")
+    print(avg_turnout)
+
+if __name__ == "__main__":
+    main()
+state_name,state,year,turnout_rate,id_stringency_tier,tier_label,verified,median_hh_income,pct_bachelors_or_higher
+Alabama,01,2012,58.6,1,ID requested/non-strict,False,43160,22.3
+Alabama,01,2020,66.21,1,ID requested/non-strict,False,52035,26.2
+Alaska,02,2012,58.7,1,ID requested/non-strict,False,69917,27.5
+Alaska,02,2020,68.41,1,ID requested/non-strict,False,77790,30.0
+Arizona,04,2012,52.6,2,Strict ID required,False,50256,26.6
+Arizona,04,2020,65.27,2,Strict ID required,False,61529,30.3
+Arkansas,05,2012,50.7,1,ID requested/non-strict,False,40531,19.8
+Arkansas,05,2020,55.86,1,ID requested/non-strict,False,49475,23.8
+California,06,2012,55.1,0,No ID required,True,61400,30.5
+California,06,2020,67.41,0,No ID required,False,78672,34.7
+Colorado,08,2012,69.9,1,ID requested/non-strict,False,58244,36.7
+Colorado,08,2020,75.51,1,ID requested/non-strict,False,75231,41.6
+Connecticut,09,2012,61.3,1,ID requested/non-strict,True,69519,36.2
+Connecticut,09,2020,70.07,1,ID requested/non-strict,False,79855,40.0
+Delaware,10,2012,62.3,1,ID requested/non-strict,False,60119,28.5
+Delaware,10,2020,70.0,1,ID requested/non-strict,False,69110,32.7
+District of Columbia,11,2012,61.5,0,No ID required,False,64267,51.2
+District of Columbia,11,2020,63.69,0,No ID required,False,90842,59.8
+Florida,12,2012,62.8,1,ID requested/non-strict,False,47309,26.2
+Florida,12,2020,71.17,1,ID requested/non-strict,False,57703,30.5
+Georgia,13,2012,59.0,2,Strict ID required,True,49604,27.8
+Georgia,13,2020,67.72,2,Strict ID required,True,61224,32.2
+Hawaii,15,2012,44.2,1,ID requested/non-strict,False,67492,29.6
+Hawaii,15,2020,57.0,1,ID requested/non-strict,False,83173,33.6
+Idaho,16,2012,59.8,1,ID requested/non-strict,False,47015,24.7
+Idaho,16,2020,67.15,1,ID requested/non-strict,False,58915,28.7
+Illinois,17,2012,58.9,0,No ID required,True,56853,31.1
+Illinois,17,2020,66.84,0,No ID required,False,68428,35.5
+Indiana,18,2012,55.2,2,Strict ID required,True,48374,23.0
+Indiana,18,2020,60.66,2,Strict ID required,True,58235,27.2
+Iowa,19,2012,70.3,1,ID requested/non-strict,True,51129,25.3
+Iowa,19,2020,72.85,1,ID requested/non-strict,False,61836,29.3
+Kansas,20,2012,56.9,2,Strict ID required,True,51273,30.0
+Kansas,20,2020,65.79,2,Strict ID required,True,61091,33.9
+Kentucky,21,2012,55.7,1,ID requested/non-strict,False,42610,21.0
+Kentucky,21,2020,64.51,1,ID requested/non-strict,False,52238,25.0
+Louisiana,22,2012,60.2,1,ID requested/non-strict,False,44673,21.4
+Louisiana,22,2020,63.67,1,ID requested/non-strict,False,50800,24.9
+Maine,23,2012,68.2,0,No ID required,True,48219,27.3
+Maine,23,2020,75.51,0,No ID required,False,59489,32.5
+Maryland,24,2012,66.6,1,ID requested/non-strict,True,72999,36.3
+Maryland,24,2020,70.41,0,No ID required,False,87063,40.9
+Massachusetts,25,2012,65.9,0,No ID required,True,66658,39.0
+Massachusetts,25,2020,71.58,0,No ID required,False,84385,44.5
+Michigan,26,2012,64.7,1,ID requested/non-strict,False,48471,25.5
+Michigan,26,2020,73.37,1,ID requested/non-strict,False,59234,30.0
+Minnesota,27,2012,76.0,1,ID requested/non-strict,True,59126,32.2
+Minnesota,27,2020,79.57,0,No ID required,False,73382,36.8
+Mississippi,28,2012,59.3,2,Strict ID required,False,38882,20.0
+Mississippi,28,2020,59.67,2,Strict ID required,False,46511,22.8
+Missouri,29,2012,62.2,1,ID requested/non-strict,False,47333,25.8
+Missouri,29,2020,65.74,1,ID requested/non-strict,False,57290,29.9
+Montana,30,2012,62.5,1,ID requested/non-strict,False,45456,28.5
+Montana,30,2020,72.33,1,ID requested/non-strict,False,56539,33.1
+Nebraska,31,2012,60.3,1,ID requested/non-strict,True,51381,28.1
+Nebraska,31,2020,69.13,1,ID requested/non-strict,False,63015,32.5
+Nevada,32,2012,56.4,0,No ID required,True,54083,22.2
+Nevada,32,2020,65.25,0,No ID required,False,62043,25.5
+New Hampshire,33,2012,70.2,0,No ID required,True,64925,33.4
+New Hampshire,33,2020,74.58,1,ID requested/non-strict,False,77923,37.6
+New Jersey,34,2012,61.5,1,ID requested/non-strict,True,71637,35.4
+New Jersey,34,2020,73.87,0,No ID required,False,85245,40.7
+New Mexico,35,2012,54.6,0,No ID required,False,44886,25.6
+New Mexico,35,2020,60.97,0,No ID required,False,51243,28.1
+New York,36,2012,53.1,0,No ID required,False,57683,32.8
+New York,36,2020,63.03,0,No ID required,False,71117,37.5
+North Carolina,37,2012,64.8,0,No ID required,True,46450,26.8
+North Carolina,37,2020,71.2,0,No ID required,True,56642,32.0
+North Dakota,38,2012,59.8,2,Strict ID required,False,51641,27.1
+North Dakota,38,2020,64.02,2,Strict ID required,False,65315,30.7
+Ohio,39,2012,64.5,1,ID requested/non-strict,False,48246,24.7
+Ohio,39,2020,66.85,1,ID requested/non-strict,False,58116,28.9
+Oklahoma,40,2012,49.2,1,ID requested/non-strict,False,44891,23.2
+Oklahoma,40,2020,54.84,1,ID requested/non-strict,False,53840,26.1
+Oregon,41,2012,63.1,0,No ID required,False,50036,29.2
+Oregon,41,2020,74.28,0,No ID required,False,65667,34.4
+Pennsylvania,42,2012,59.5,1,ID requested/non-strict,True,52267,27.0
+Pennsylvania,42,2020,70.69,0,No ID required,False,63627,32.3
+Rhode Island,44,2012,58.0,1,ID requested/non-strict,False,56102,30.8
+Rhode Island,44,2020,64.75,1,ID requested/non-strict,False,70305,35.0
+South Carolina,45,2012,56.3,1,ID requested/non-strict,False,44623,24.6
+South Carolina,45,2020,64.01,1,ID requested/non-strict,False,54864,29.0
+South Dakota,46,2012,59.3,1,ID requested/non-strict,False,49091,26.0
+South Dakota,46,2020,65.21,1,ID requested/non-strict,False,59896,29.3
+Tennessee,47,2012,51.9,2,Strict ID required,True,44140,23.5
+Tennessee,47,2020,59.59,2,Strict ID required,True,54833,28.2
+Texas,48,2012,49.6,1,ID requested/non-strict,True,51563,26.3
+Texas,48,2020,60.24,1,ID requested/non-strict,False,63826,30.7
+Utah,49,2012,55.5,1,ID requested/non-strict,False,58164,29.9
+Utah,49,2020,67.91,1,ID requested/non-strict,False,74197,34.7
+Vermont,50,2012,60.7,0,No ID required,False,54168,34.2
+Vermont,50,2020,73.5,0,No ID required,False,63477,39.7
+Virginia,51,2012,66.1,1,ID requested/non-strict,False,63636,34.7
+Virginia,51,2020,71.99,2,Strict ID required,False,76398,39.5
+Washington,53,2012,64.8,1,ID requested/non-strict,False,59374,31.6
+Washington,53,2020,75.17,1,ID requested/non-strict,False,77006,36.7
+West Virginia,54,2012,46.3,1,ID requested/non-strict,False,40400,17.9
+West Virginia,54,2020,57.0,1,ID requested/non-strict,False,48037,21.3
+Wisconsin,55,2012,72.9,1,ID requested/non-strict,True,52627,26.4
+Wisconsin,55,2020,75.5,2,Strict ID required,True,63293,30.8
+Wyoming,56,2012,58.6,2,Strict ID required,False,56573,24.3
+Wyoming,56,2020,64.16,1,ID requested/non-strict,False,65304,28.2
+
+"""
+Merge the three project data sources into one analysis-ready dataset:
+  - acs_income_education.csv  (state, year, median_hh_income, pct_bachelors_or_higher)
+  - turnout_clean.csv         (state, year, turnout_rate)
+  - voter_id_stringency.csv   (state_name, year, id_stringency_tier, ...)
+
+Run this after all three source scripts have been run and their CSVs
+exist in the same folder.
+"""
+
+import pandas as pd
+
+def main():
+    acs = pd.read_csv("acs_income_education.csv", dtype={"state": str})
+    turnout = pd.read_csv("turnout_clean.csv", dtype={"state": str})
+    stringency = pd.read_csv("voter_id_stringency.csv")
+
+    # ACS's FIPS codes come back from the Census API without zero-padding
+    # in some cases -- normalize to 2-digit strings so joins line up.
+    acs["state"] = acs["state"].str.zfill(2)
+    turnout["state"] = turnout["state"].str.zfill(2)
+
+    # Step 1: join ACS + turnout on FIPS code + year
+    merged = pd.merge(
+        acs,
+        turnout[["state", "year", "turnout_rate"]],
+        on=["state", "year"],
+        how="inner",
+    )
+
+    before = len(merged)
+    print(f"After ACS + turnout join: {before} rows")
+
+    # Step 2: join in voter ID stringency on state name + year
+    # (state names must match exactly -- e.g. "state_name" from ACS's
+    # NAME field vs. the hand-typed names in voter_id_stringency.csv)
+    merged = pd.merge(
+        merged,
+        stringency[["state_name", "year", "id_stringency_tier", "tier_label", "verified"]],
+        on=["state_name", "year"],
+        how="left",
+    )
+
+    after = len(merged)
+    unmatched = merged[merged["id_stringency_tier"].isna()]
+    if len(unmatched):
+        print(f"WARNING: {len(unmatched)} rows have no matching stringency data:")
+        print(unmatched[["state_name", "year"]].to_string(index=False))
+    else:
+        print(f"All {after} rows matched to a stringency tier.")
+
+    # Final column order for readability
+    cols = [
+        "state_name", "state", "year",
+        "turnout_rate", "id_stringency_tier", "tier_label", "verified",
+        "median_hh_income", "pct_bachelors_or_higher",
+    ]
+    merged = merged[cols].sort_values(["state_name", "year"]).reset_index(drop=True)
+
+    merged.to_csv("analysis_dataset.csv", index=False)
+    print(f"\nSaved {len(merged)} rows to analysis_dataset.csv")
+    print(merged.head(10))
+
+if __name__ == "__main__":
+    main()
+state_name,state,year,turnout_rate
+Alabama,01,2012,58.6
+Alabama,01,2020,66.21
+Alaska,02,2012,58.7
+Alaska,02,2020,68.41
+Arizona,04,2012,52.6
+Arizona,04,2020,65.27
+Arkansas,05,2012,50.7
+Arkansas,05,2020,55.86
+California,06,2012,55.1
+California,06,2020,67.41
+Colorado,08,2012,69.9
+Colorado,08,2020,75.51
+Connecticut,09,2012,61.3
+Connecticut,09,2020,70.07
+Delaware,10,2012,62.3
+Delaware,10,2020,70.0
+District of Columbia,11,2012,61.5
+District of Columbia,11,2020,63.69
+Florida,12,2012,62.8
+Florida,12,2020,71.17
+Georgia,13,2012,59.0
+Georgia,13,2020,67.72
+Hawaii,15,2012,44.2
+Hawaii,15,2020,57.0
+Idaho,16,2012,59.8
+Idaho,16,2020,67.15
+Illinois,17,2012,58.9
+Illinois,17,2020,66.84
+Indiana,18,2012,55.2
+Indiana,18,2020,60.66
+Iowa,19,2012,70.3
+Iowa,19,2020,72.85
+Kansas,20,2012,56.9
+Kansas,20,2020,65.79
+Kentucky,21,2012,55.7
+Kentucky,21,2020,64.51
+Louisiana,22,2012,60.2
+Louisiana,22,2020,63.67
+Maine,23,2012,68.2
+Maine,23,2020,75.51
+Maryland,24,2012,66.6
+Maryland,24,2020,70.41
+Massachusetts,25,2012,65.9
+Massachusetts,25,2020,71.58
+Michigan,26,2012,64.7
+Michigan,26,2020,73.37
+Minnesota,27,2012,76.0
+Minnesota,27,2020,79.57
+Mississippi,28,2012,59.3
+Mississippi,28,2020,59.67
+Missouri,29,2012,62.2
+Missouri,29,2020,65.74
+Montana,30,2012,62.5
+Montana,30,2020,72.33
+Nebraska,31,2012,60.3
+Nebraska,31,2020,69.13
+Nevada,32,2012,56.4
+Nevada,32,2020,65.25
+New Hampshire,33,2012,70.2
+New Hampshire,33,2020,74.58
+New Jersey,34,2012,61.5
+New Jersey,34,2020,73.87
+New Mexico,35,2012,54.6
+New Mexico,35,2020,60.97
+New York,36,2012,53.1
+New York,36,2020,63.03
+North Carolina,37,2012,64.8
+North Carolina,37,2020,71.2
+North Dakota,38,2012,59.8
+North Dakota,38,2020,64.02
+Ohio,39,2012,64.5
+Ohio,39,2020,66.85
+Oklahoma,40,2012,49.2
+Oklahoma,40,2020,54.84
+Oregon,41,2012,63.1
+Oregon,41,2020,74.28
+Pennsylvania,42,2012,59.5
+Pennsylvania,42,2020,70.69
+Rhode Island,44,2012,58.0
+Rhode Island,44,2020,64.75
+South Carolina,45,2012,56.3
+South Carolina,45,2020,64.01
+South Dakota,46,2012,59.3
+South Dakota,46,2020,65.21
+Tennessee,47,2012,51.9
+Tennessee,47,2020,59.59
+Texas,48,2012,49.6
+Texas,48,2020,60.24
+Utah,49,2012,55.5
+Utah,49,2020,67.91
+Vermont,50,2012,60.7
+Vermont,50,2020,73.5
+Virginia,51,2012,66.1
+Virginia,51,2020,71.99
+Washington,53,2012,64.8
+Washington,53,2020,75.17
+West Virginia,54,2012,46.3
+West Virginia,54,2020,57.0
+Wisconsin,55,2012,72.9
+Wisconsin,55,2020,75.5
+Wyoming,56,2012,58.6
+Wyoming,56,2020,64.16
+
+"""
+Turnout data for the 2012 and 2020 presidential elections, using
+"turnout as a percentage of ballots cast for the highest office" --
+i.e., votes for president / voting-eligible population (VEP).
+
+SOURCE: Ballotpedia, "Voter turnout in United States elections,"
+https://ballotpedia.org/Voter_turnout_in_United_States_elections
+which compiles and cites the United States Elections Project's
+"2012 November General Election Turnout Rates" and "2020 November
+General Election Turnout Rates" (Dr. Michael McDonald). The US
+Elections Project's own turnout data has since moved to the UF
+Election Lab (https://election.lab.ufl.edu/).
+
+This script writes both the raw values (for transparency/citation)
+and the cleaned, merge-ready CSV in one step.
+"""
+
+import pandas as pd
+
+STATE_FIPS = {
+    "Alabama": "01", "Alaska": "02", "Arizona": "04", "Arkansas": "05",
+    "California": "06", "Colorado": "08", "Connecticut": "09", "Delaware": "10",
+    "District of Columbia": "11", "Florida": "12", "Georgia": "13", "Hawaii": "15",
+    "Idaho": "16", "Illinois": "17", "Indiana": "18", "Iowa": "19", "Kansas": "20",
+    "Kentucky": "21", "Louisiana": "22", "Maine": "23", "Maryland": "24",
+    "Massachusetts": "25", "Michigan": "26", "Minnesota": "27", "Mississippi": "28",
+    "Missouri": "29", "Montana": "30", "Nebraska": "31", "Nevada": "32",
+    "New Hampshire": "33", "New Jersey": "34", "New Mexico": "35", "New York": "36",
+    "North Carolina": "37", "North Dakota": "38", "Ohio": "39", "Oklahoma": "40",
+    "Oregon": "41", "Pennsylvania": "42", "Rhode Island": "44", "South Carolina": "45",
+    "South Dakota": "46", "Tennessee": "47", "Texas": "48", "Utah": "49",
+    "Vermont": "50", "Virginia": "51", "Washington": "53", "West Virginia": "54",
+    "Wisconsin": "55", "Wyoming": "56",
+}
+
+# turnout_rate = votes for highest office (president) / voting-eligible population, in percent
+TURNOUT_2012 = {
+    "Alabama": 58.60, "Alaska": 58.70, "Arizona": 52.60, "Arkansas": 50.70,
+    "California": 55.10, "Colorado": 69.90, "Connecticut": 61.30, "Delaware": 62.30,
+    "District of Columbia": 61.50, "Florida": 62.80, "Georgia": 59.00, "Hawaii": 44.20,
+    "Idaho": 59.80, "Illinois": 58.90, "Indiana": 55.20, "Iowa": 70.30, "Kansas": 56.90,
+    "Kentucky": 55.70, "Louisiana": 60.20, "Maine": 68.20, "Maryland": 66.60,
+    "Massachusetts": 65.90, "Michigan": 64.70, "Minnesota": 76.00, "Mississippi": 59.30,
+    "Missouri": 62.20, "Montana": 62.50, "Nebraska": 60.30, "Nevada": 56.40,
+    "New Hampshire": 70.20, "New Jersey": 61.50, "New Mexico": 54.60, "New York": 53.10,
+    "North Carolina": 64.80, "North Dakota": 59.80, "Ohio": 64.50, "Oklahoma": 49.20,
+    "Oregon": 63.10, "Pennsylvania": 59.50, "Rhode Island": 58.00, "South Carolina": 56.30,
+    "South Dakota": 59.30, "Tennessee": 51.90, "Texas": 49.60, "Utah": 55.50,
+    "Vermont": 60.70, "Virginia": 66.10, "Washington": 64.80, "West Virginia": 46.30,
+    "Wisconsin": 72.90, "Wyoming": 58.60,
+}
+
+TURNOUT_2020 = {
+    "Alabama": 66.21, "Alaska": 68.41, "Arizona": 65.27, "Arkansas": 55.86,
+    "California": 67.41, "Colorado": 75.51, "Connecticut": 70.07, "Delaware": 70.00,
+    "District of Columbia": 63.69, "Florida": 71.17, "Georgia": 67.72, "Hawaii": 57.00,
+    "Idaho": 67.15, "Illinois": 66.84, "Indiana": 60.66, "Iowa": 72.85, "Kansas": 65.79,
+    "Kentucky": 64.51, "Louisiana": 63.67, "Maine": 75.51, "Maryland": 70.41,
+    "Massachusetts": 71.58, "Michigan": 73.37, "Minnesota": 79.57, "Mississippi": 59.67,
+    "Missouri": 65.74, "Montana": 72.33, "Nebraska": 69.13, "Nevada": 65.25,
+    "New Hampshire": 74.58, "New Jersey": 73.87, "New Mexico": 60.97, "New York": 63.03,
+    "North Carolina": 71.20, "North Dakota": 64.02, "Ohio": 66.85, "Oklahoma": 54.84,
+    "Oregon": 74.28, "Pennsylvania": 70.69, "Rhode Island": 64.75, "South Carolina": 64.01,
+    "South Dakota": 65.21, "Tennessee": 59.59, "Texas": 60.24, "Utah": 67.91,
+    "Vermont": 73.50, "Virginia": 71.99, "Washington": 75.17, "West Virginia": 57.00,
+    "Wisconsin": 75.50, "Wyoming": 64.16,
+}
+
+
+def main():
+    rows = []
+    for state, fips in STATE_FIPS.items():
+        rows.append({
+            "state_name": state, "state": fips, "year": 2012,
+            "turnout_rate": TURNOUT_2012[state],
+        })
+        rows.append({
+            "state_name": state, "state": fips, "year": 2020,
+            "turnout_rate": TURNOUT_2020[state],
+        })
+
+    df = pd.DataFrame(rows)
+    df.to_csv("turnout_clean.csv", index=False)
+    print(f"Saved {len(df)} rows to turnout_clean.csv")
+    print(df.head())
+
+
+if __name__ == "__main__":
+    main()
+state_name,year,id_stringency_tier,tier_label,verified,source_note
+California,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+California,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Illinois,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+Illinois,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Maine,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+Maine,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Massachusetts,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+Massachusetts,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Nevada,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+Nevada,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+New Hampshire,2012,0,No ID required,True,Law passed 2012 but effective date pushed to 2013
+New Hampshire,2020,1,ID requested/non-strict,False,Default: current NCSL non-strict bucket
+North Carolina,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+North Carolina,2020,0,No ID required,True,2018 law blocked by courts through 2020 general election
+Maryland,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+Maryland,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Nebraska,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+Nebraska,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+Pennsylvania,2012,1,ID requested/non-strict,True,Strict law passed but blocked by courts before election
+Pennsylvania,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Connecticut,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+Connecticut,2020,1,ID requested/non-strict,False,Default: current NCSL non-strict bucket
+New Jersey,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+New Jersey,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Iowa,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+Iowa,2020,1,ID requested/non-strict,False,Default: current NCSL non-strict bucket
+Minnesota,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+Minnesota,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Texas,2012,1,ID requested/non-strict,True,Strict photo law blocked by courts for 2012 election
+Texas,2020,1,ID requested/non-strict,False,Default: current NCSL non-strict photo bucket
+Wisconsin,2012,1,ID requested/non-strict,True,Strict photo law blocked by courts for 2012 election
+Wisconsin,2020,2,Strict ID required,True,"Strict law finally implemented starting 2016, in effect by 2020"
+Georgia,2012,2,Strict ID required,True,Strict photo ID in effect since 2008 (Crawford v. Marion)
+Georgia,2020,2,Strict ID required,True,Same strict law remained in effect
+Indiana,2012,2,Strict ID required,True,Strict photo ID in effect since 2008 (Crawford v. Marion)
+Indiana,2020,2,Strict ID required,True,Same strict law remained in effect
+Kansas,2012,2,Strict ID required,True,Strict photo ID law took effect Jan 2012
+Kansas,2020,2,Strict ID required,True,Same strict law remained in effect
+Tennessee,2012,2,Strict ID required,True,Strict photo ID law took effect 2012
+Tennessee,2020,2,Strict ID required,True,Same strict law remained in effect
+Alabama,2012,1,ID requested/non-strict,False,Default: current classification
+Alabama,2020,1,ID requested/non-strict,False,"Default: current classification (AL law passed 2011, delayed to 2014 for preclearance -- verify 2012 status)"
+Alaska,2012,1,ID requested/non-strict,False,Default: current classification
+Alaska,2020,1,ID requested/non-strict,False,Default: current classification
+Arizona,2012,2,Strict ID required,False,Default: current classification
+Arizona,2020,2,Strict ID required,False,Default: current classification
+Arkansas,2012,1,ID requested/non-strict,False,Default: current classification
+Arkansas,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+Colorado,2012,1,ID requested/non-strict,False,Default: current classification
+Colorado,2020,1,ID requested/non-strict,False,Default: current classification
+Delaware,2012,1,ID requested/non-strict,False,Default: current classification
+Delaware,2020,1,ID requested/non-strict,False,Default: current classification
+Florida,2012,1,ID requested/non-strict,False,Default: current classification
+Florida,2020,1,ID requested/non-strict,False,Default: current classification
+Hawaii,2012,1,ID requested/non-strict,False,Default: current classification
+Hawaii,2020,1,ID requested/non-strict,False,Default: current classification
+Idaho,2012,1,ID requested/non-strict,False,Default: current classification
+Idaho,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+Kentucky,2012,1,ID requested/non-strict,False,Default: current classification
+Kentucky,2020,1,ID requested/non-strict,False,"KY moved to strict photo ID via 2021 law -- likely lower tier in 2012/2020, verify"
+Louisiana,2012,1,ID requested/non-strict,False,Default: current classification
+Louisiana,2020,1,ID requested/non-strict,False,Default: current classification
+Michigan,2012,1,ID requested/non-strict,False,Default: current classification
+Michigan,2020,1,ID requested/non-strict,False,Default: current classification
+Mississippi,2012,2,Strict ID required,False,Default: current classification
+Mississippi,2020,2,Strict ID required,False,"MS photo ID law approved 2011, implementation delayed to 2014 -- verify 2012 status"
+Missouri,2012,1,ID requested/non-strict,False,Default: current classification
+Missouri,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+Montana,2012,1,ID requested/non-strict,False,Default: current classification
+Montana,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+New Mexico,2012,0,No ID required,False,Default: current classification
+New Mexico,2020,0,No ID required,False,Default: current classification
+New York,2012,0,No ID required,False,Default: current classification
+New York,2020,0,No ID required,False,Default: current classification
+North Dakota,2012,2,Strict ID required,False,Default: current classification
+North Dakota,2020,2,Strict ID required,False,Default: current classification
+Ohio,2012,1,ID requested/non-strict,False,Default: current classification
+Ohio,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+Oklahoma,2012,1,ID requested/non-strict,False,Default: current classification
+Oklahoma,2020,1,ID requested/non-strict,False,Default: current classification
+Oregon,2012,0,No ID required,False,Default: current classification
+Oregon,2020,0,No ID required,False,Default: current classification
+Rhode Island,2012,1,ID requested/non-strict,False,Default: current classification
+Rhode Island,2020,1,ID requested/non-strict,False,"RI photo ID law took effect Jan 2012, verify if fully phased in for Nov 2012"
+South Carolina,2012,1,ID requested/non-strict,False,Default: current classification
+South Carolina,2020,1,ID requested/non-strict,False,"SC 2011 law blocked by DOJ under Section 5, implemented 2013 -- verify 2012 status"
+South Dakota,2012,1,ID requested/non-strict,False,Default: current classification
+South Dakota,2020,1,ID requested/non-strict,False,Default: current classification
+Utah,2012,1,ID requested/non-strict,False,Default: current classification
+Utah,2020,1,ID requested/non-strict,False,Default: current classification
+Vermont,2012,0,No ID required,False,Default: current classification
+Vermont,2020,0,No ID required,False,Default: current classification
+Virginia,2012,1,ID requested/non-strict,False,Default: current classification
+Virginia,2020,2,Strict ID required,False,VA moved from non-strict to strict photo ID starting 2014 -- verify
+Washington,2012,1,ID requested/non-strict,False,Default: current classification
+Washington,2020,1,ID requested/non-strict,False,Default: current classification
+West Virginia,2012,1,ID requested/non-strict,False,Default: current classification
+West Virginia,2020,1,ID requested/non-strict,False,Default: current classification
+Wyoming,2012,2,Strict ID required,False,Default: current classification
+Wyoming,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+District of Columbia,2012,0,No ID required,False,Default: current classification
+District of Columbia,2020,0,No ID required,False,Default: current classification
+
+"""
+Builds the voter ID stringency table (3-tier, simplified per project scope).
+
+TIER SCHEME:
+  0 = No ID required to vote at the polls
+  1 = ID requested/required, but a voter without one can still cast a
+      ballot that counts without further action (affidavit, poll worker
+      attestation, non-strict non-photo document, etc.)
+  2 = Strict requirement — voter without accepted ID casts a provisional
+      ballot and must take an extra step after Election Day for it to count
+
+IMPORTANT: 'verified' column marks entries backed by a specific historical
+source (see notes). Anything 'verified'=False is a DEFAULT based on
+today's NCSL classification and may be WRONG for that specific year --
+voter ID law is one of the most litigated, frequently-changed areas of
+election law. Check the flagged ones before using this in your writeup.
+
+Known trouble spots already handled below:
+  - TX, WI (2012): strict photo ID laws passed but BLOCKED BY COURTS,
+    did not apply to the actual 2012 election -> coded as prior tier 1
+  - PA (2012): strict law passed but blocked before election -> tier 1
+  - NC (2020): 2018 photo ID law blocked by courts through the 2020
+    general election -> tier 0, NOT today's tier 2
+  - AR, ID, MO, MT, NE, OH, WY: enacted STRICTER id laws AFTER 2020
+    (per NCSL/NBC reporting) -> today's classification would overstate
+    their 2020 stringency. Coded here as tier 1 default, but verify.
+"""
+
+import pandas as pd
+
+# name -> (2012_tier, 2012_verified, 2012_note, 2020_tier, 2020_verified, 2020_note)
+DATA = {
+    # --- Fully verified 2012 entries (Ballotpedia "Voting in the 2012
+    # general elections") ---
+    "California":       (0, True,  "No ID required (Ballotpedia 2012)", 0, False, "Default: current NCSL 'no document' bucket"),
+    "Illinois":         (0, True,  "No ID required (Ballotpedia 2012)", 0, False, "Default: current NCSL 'no document' bucket"),
+    "Maine":            (0, True,  "No ID required (Ballotpedia 2012)", 0, False, "Default: current NCSL 'no document' bucket"),
+    "Massachusetts":    (0, True,  "No ID required (Ballotpedia 2012)", 0, False, "Default: current NCSL 'no document' bucket"),
+    "Nevada":           (0, True,  "No ID required (Ballotpedia 2012)", 0, False, "Default: current NCSL 'no document' bucket"),
+    "New Hampshire":    (0, True,  "Law passed 2012 but effective date pushed to 2013", 1, False, "Default: current NCSL non-strict bucket"),
+    "North Carolina":   (0, True,  "No ID required (Ballotpedia 2012)", 0, True, "2018 law blocked by courts through 2020 general election"),
+    "Maryland":         (1, True,  "Select voters required ID (Ballotpedia 2012)", 0, False, "Default: current NCSL 'no document' bucket"),
+    "Nebraska":         (1, True,  "Select voters required ID (Ballotpedia 2012)", 1, False, "NCSL: enacted stricter law after 2020, verify pre-2020 status"),
+    "Pennsylvania":     (1, True,  "Strict law passed but blocked by courts before election", 0, False, "Default: current NCSL 'no document' bucket"),
+    "Connecticut":      (1, True,  "Select voters required ID (Ballotpedia 2012)", 1, False, "Default: current NCSL non-strict bucket"),
+    "New Jersey":       (1, True,  "Select voters required ID (Ballotpedia 2012)", 0, False, "Default: current NCSL 'no document' bucket"),
+    "Iowa":             (1, True,  "Select voters required ID (Ballotpedia 2012)", 1, False, "Default: current NCSL non-strict bucket"),
+    "Minnesota":        (1, True,  "Select voters required ID (Ballotpedia 2012)", 0, False, "Default: current NCSL 'no document' bucket"),
+    "Texas":            (1, True,  "Strict photo law blocked by courts for 2012 election", 1, False, "Default: current NCSL non-strict photo bucket"),
+    "Wisconsin":        (1, True,  "Strict photo law blocked by courts for 2012 election", 2, True, "Strict law finally implemented starting 2016, in effect by 2020"),
+    "Georgia":          (2, True,  "Strict photo ID in effect since 2008 (Crawford v. Marion)", 2, True, "Same strict law remained in effect"),
+    "Indiana":          (2, True,  "Strict photo ID in effect since 2008 (Crawford v. Marion)", 2, True, "Same strict law remained in effect"),
+    "Kansas":           (2, True,  "Strict photo ID law took effect Jan 2012", 2, True, "Same strict law remained in effect"),
+    "Tennessee":        (2, True,  "Strict photo ID law took effect 2012", 2, True, "Same strict law remained in effect"),
+
+    # --- Remaining states: DEFAULT to current NCSL classification for
+    # BOTH years -- these need your verification, especially any state
+    # you know changed its law between 2012 and 2020 ---
+    "Alabama":          (1, False, "Default: current classification", 1, False, "Default: current classification (AL law passed 2011, delayed to 2014 for preclearance -- verify 2012 status)"),
+    "Alaska":           (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Arizona":          (2, False, "Default: current classification", 2, False, "Default: current classification"),
+    "Arkansas":         (1, False, "Default: current classification", 1, False, "NCSL: enacted stricter law after 2020, verify pre-2020 status"),
+    "Colorado":         (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Delaware":         (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Florida":          (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Hawaii":           (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Idaho":            (1, False, "Default: current classification", 1, False, "NCSL: enacted stricter law after 2020, verify pre-2020 status"),
+    "Kentucky":         (1, False, "Default: current classification", 1, False, "KY moved to strict photo ID via 2021 law -- likely lower tier in 2012/2020, verify"),
+    "Louisiana":        (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Michigan":         (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Mississippi":      (2, False, "Default: current classification", 2, False, "MS photo ID law approved 2011, implementation delayed to 2014 -- verify 2012 status"),
+    "Missouri":         (1, False, "Default: current classification", 1, False, "NCSL: enacted stricter law after 2020, verify pre-2020 status"),
+    "Montana":          (1, False, "Default: current classification", 1, False, "NCSL: enacted stricter law after 2020, verify pre-2020 status"),
+    "New Mexico":       (0, False, "Default: current classification", 0, False, "Default: current classification"),
+    "New York":         (0, False, "Default: current classification", 0, False, "Default: current classification"),
+    "North Dakota":     (2, False, "Default: current classification", 2, False, "Default: current classification"),
+    "Ohio":             (1, False, "Default: current classification", 1, False, "NCSL: enacted stricter law after 2020, verify pre-2020 status"),
+    "Oklahoma":         (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Oregon":           (0, False, "Default: current classification", 0, False, "Default: current classification"),
+    "Rhode Island":     (1, False, "Default: current classification", 1, False, "RI photo ID law took effect Jan 2012, verify if fully phased in for Nov 2012"),
+    "South Carolina":   (1, False, "Default: current classification", 1, False, "SC 2011 law blocked by DOJ under Section 5, implemented 2013 -- verify 2012 status"),
+    "South Dakota":     (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Utah":             (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Vermont":          (0, False, "Default: current classification", 0, False, "Default: current classification"),
+    "Virginia":         (1, False, "Default: current classification", 2, False, "VA moved from non-strict to strict photo ID starting 2014 -- verify"),
+    "Washington":       (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "West Virginia":    (1, False, "Default: current classification", 1, False, "Default: current classification"),
+    "Wyoming":          (2, False, "Default: current classification", 1, False, "NCSL: enacted stricter law after 2020, verify pre-2020 status"),
+    "District of Columbia": (0, False, "Default: current classification", 0, False, "Default: current classification"),
+}
+
+TIER_LABELS = {0: "No ID required", 1: "ID requested/non-strict", 2: "Strict ID required"}
+
+
+def build_table() -> pd.DataFrame:
+    rows = []
+    for state, (t12, v12, n12, t20, v20, n20) in DATA.items():
+        rows.append({"state_name": state, "year": 2012, "id_stringency_tier": t12,
+                     "tier_label": TIER_LABELS[t12], "verified": v12, "source_note": n12})
+        rows.append({"state_name": state, "year": 2020, "id_stringency_tier": t20,
+                     "tier_label": TIER_LABELS[t20], "verified": v20, "source_note": n20})
+    return pd.DataFrame(rows)
+
+
+def main():
+    df = build_table()
+    df.to_csv("voter_id_stringency.csv", index=False)
+
+    verified_count = df["verified"].sum()
+    total = len(df)
+    print(f"Saved {total} rows to voter_id_stringency.csv")
+    print(f"{verified_count}/{total} rows are sourced/verified; "
+          f"{total - verified_count} are defaults -- check the source_note column.")
+    print(df[df["verified"] == False]["state_name"].nunique(),  # noqa: E712
+          "states have at least one unverified year -- prioritize checking these.")
+
+
+if __name__ == "__main__":
+    main()
+state_name,median_hh_income,state,year,pct_bachelors_or_higher
+Alabama,43160,01,2012,22.3
+Alabama,52035,01,2020,26.2
+Alaska,69917,02,2012,27.5
+Alaska,77790,02,2020,30.0
+Arizona,50256,04,2012,26.6
+Arizona,61529,04,2020,30.3
+Arkansas,40531,05,2012,19.8
+Arkansas,49475,05,2020,23.8
+California,61400,06,2012,30.5
+California,78672,06,2020,34.7
+Colorado,58244,08,2012,36.7
+Colorado,75231,08,2020,41.6
+Connecticut,69519,09,2012,36.2
+Connecticut,79855,09,2020,40.0
+Delaware,60119,10,2012,28.5
+Delaware,69110,10,2020,32.7
+District of Columbia,64267,11,2012,51.2
+District of Columbia,90842,11,2020,59.8
+Florida,47309,12,2012,26.2
+Florida,57703,12,2020,30.5
+Georgia,49604,13,2012,27.8
+Georgia,61224,13,2020,32.2
+Hawaii,67492,15,2012,29.6
+Hawaii,83173,15,2020,33.6
+Idaho,47015,16,2012,24.7
+Idaho,58915,16,2020,28.7
+Illinois,56853,17,2012,31.1
+Illinois,68428,17,2020,35.5
+Indiana,48374,18,2012,23.0
+Indiana,58235,18,2020,27.2
+Iowa,51129,19,2012,25.3
+Iowa,61836,19,2020,29.3
+Kansas,51273,20,2012,30.0
+Kansas,61091,20,2020,33.9
+Kentucky,42610,21,2012,21.0
+Kentucky,52238,21,2020,25.0
+Louisiana,44673,22,2012,21.4
+Louisiana,50800,22,2020,24.9
+Maine,48219,23,2012,27.3
+Maine,59489,23,2020,32.5
+Maryland,72999,24,2012,36.3
+Maryland,87063,24,2020,40.9
+Massachusetts,66658,25,2012,39.0
+Massachusetts,84385,25,2020,44.5
+Michigan,48471,26,2012,25.5
+Michigan,59234,26,2020,30.0
+Minnesota,59126,27,2012,32.2
+Minnesota,73382,27,2020,36.8
+Mississippi,38882,28,2012,20.0
+Mississippi,46511,28,2020,22.8
+Missouri,47333,29,2012,25.8
+Missouri,57290,29,2020,29.9
+Montana,45456,30,2012,28.5
+Montana,56539,30,2020,33.1
+Nebraska,51381,31,2012,28.1
+Nebraska,63015,31,2020,32.5
+Nevada,54083,32,2012,22.2
+Nevada,62043,32,2020,25.5
+New Hampshire,64925,33,2012,33.4
+New Hampshire,77923,33,2020,37.6
+New Jersey,71637,34,2012,35.4
+New Jersey,85245,34,2020,40.7
+New Mexico,44886,35,2012,25.6
+New Mexico,51243,35,2020,28.1
+New York,57683,36,2012,32.8
+New York,71117,36,2020,37.5
+North Carolina,46450,37,2012,26.8
+North Carolina,56642,37,2020,32.0
+North Dakota,51641,38,2012,27.1
+North Dakota,65315,38,2020,30.7
+Ohio,48246,39,2012,24.7
+Ohio,58116,39,2020,28.9
+Oklahoma,44891,40,2012,23.2
+Oklahoma,53840,40,2020,26.1
+Oregon,50036,41,2012,29.2
+Oregon,65667,41,2020,34.4
+Pennsylvania,52267,42,2012,27.0
+Pennsylvania,63627,42,2020,32.3
+Puerto Rico,19515,72,2012,
+Puerto Rico,21058,72,2020,
+Rhode Island,56102,44,2012,30.8
+Rhode Island,70305,44,2020,35.0
+South Carolina,44623,45,2012,24.6
+South Carolina,54864,45,2020,29.0
+South Dakota,49091,46,2012,26.0
+South Dakota,59896,46,2020,29.3
+Tennessee,44140,47,2012,23.5
+Tennessee,54833,47,2020,28.2
+Texas,51563,48,2012,26.3
+Texas,63826,48,2020,30.7
+Utah,58164,49,2012,29.9
+Utah,74197,49,2020,34.7
+Vermont,54168,50,2012,34.2
+Vermont,63477,50,2020,39.7
+Virginia,63636,51,2012,34.7
+Virginia,76398,51,2020,39.5
+Washington,59374,53,2012,31.6
+Washington,77006,53,2020,36.7
+West Virginia,40400,54,2012,17.9
+West Virginia,48037,54,2020,21.3
+Wisconsin,52627,55,2012,26.4
+Wisconsin,63293,55,2020,30.8
+Wyoming,56573,56,2012,24.3
+Wyoming,65304,56,2020,28.2
+
+"""
+Pull state-level ACS 5-Year Estimates (income + education) for the
+voter ID / turnout project.
+
+ACS5 vintage note: the `year` param is the END year of the 5-year window.
+  year=2012 -> 2008-2012 ACS5 (aligns with the 2012 election)
+  year=2020 -> 2016-2020 ACS5 (aligns with the 2020 election)
+
+Usage:
+    export CENSUS_API_KEY="your_key_here"
+    python census_pull.py
+"""
+
+import os
+import requests
+import pandas as pd
+
+API_KEY = os.environ.get("CENSUS_API_KEY", "eed7087f66df252ec16fc3c56c31662648470177")
+
+# Election years mapped to their matching ACS5 vintage (end year of window)
+YEARS = [2012, 2020]  # add 2014, 2016, 2018 later if time allows
+
+def pull_income(year: int) -> pd.DataFrame:
+    """Median household income, B19013_001E, from the detail tables API."""
+    url = f"https://api.census.gov/data/{year}/acs/acs5"
+    params = {
+        "get": "NAME,B19013_001E",
+        "for": "state:*",
+        "key": API_KEY,
+    }
+    r = requests.get(url, params=params)
+    r.raise_for_status()
+    data = r.json()
+    df = pd.DataFrame(data[1:], columns=data[0])
+    df = df.rename(columns={"B19013_001E": "median_hh_income"})
+    df["median_hh_income"] = pd.to_numeric(df["median_hh_income"], errors="coerce")
+    df["year"] = year
+    return df
+
+def find_bachelors_variable(year: int) -> str:
+    """
+    DP02's variable numbering shifts between ACS vintages (e.g. DP02_0067PE
+    in some years, DP02_0068PE in others), so instead of hardcoding a code,
+    look up the variable list for this year and match on the label text.
+    """
+    url = f"https://api.census.gov/data/{year}/acs/acs5/profile/variables.json"
+    r = requests.get(url)
+    r.raise_for_status()
+    variables = r.json()["variables"]
+
+    for code, meta in variables.items():
+        label = meta.get("label", "")
+        # Looking for the PERCENT estimate (not margin of error, not annotation)
+        # of "...Bachelor's degree or higher", e.g.
+        # "Percent!!EDUCATIONAL ATTAINMENT!!...!!Bachelor's degree or higher"
+        if (
+            code.endswith("PE")
+            and "bachelor's degree or higher" in label.lower()
+            and "percent" in label.lower()
+        ):
+            return code
+
+    raise ValueError(
+        f"Could not find a 'percent bachelor's degree or higher' variable "
+        f"for {year}. Check {url} manually."
+    )
+
+
+def pull_education(year: int) -> pd.DataFrame:
+    """% bachelor's degree or higher, looked up dynamically per vintage."""
+    var_code = find_bachelors_variable(year)
+    print(f"{year}: using variable {var_code} for pct bachelor's or higher")
+
+    url = f"https://api.census.gov/data/{year}/acs/acs5/profile"
+    params = {
+        "get": f"NAME,{var_code}",
+        "for": "state:*",
+        "key": API_KEY,
+    }
+    r = requests.get(url, params=params)
+    r.raise_for_status()
+    data = r.json()
+    df = pd.DataFrame(data[1:], columns=data[0])
+    df = df.rename(columns={var_code: "pct_bachelors_or_higher"})
+    df["pct_bachelors_or_higher"] = pd.to_numeric(
+        df["pct_bachelors_or_higher"], errors="coerce"
+    )
+    df["year"] = year
+    return df
+
+def main():
+    income_frames = [pull_income(y) for y in YEARS]
+    edu_frames = [pull_education(y) for y in YEARS]
+
+    income_df = pd.concat(income_frames, ignore_index=True)
+    edu_df = pd.concat(edu_frames, ignore_index=True)
+
+    merged = pd.merge(
+        income_df,
+        edu_df,
+        on=["NAME", "state", "year"],
+        how="outer",
+    )
+
+    merged = merged.rename(columns={"NAME": "state_name"})
+    merged.to_csv("acs_income_education.csv", index=False)
+    print(f"Saved {len(merged)} rows to acs_income_education.csv")
+    print(merged.head())
+
+if __name__ == "__main__":
+    main()

@@ -13,6 +13,6 @@ Welcome to my Data Science Studio portfolio — this site documents my learning 
 ### Explore
 - [Blog](blog.md) — reflections on data science topics as I learn them
 - [Projects](projects.md) — data science projects and research
-- [Resume (PDF)](Mo_Balogun_Resume(1).pdf) — download my resume
+- [Resume (PDF)](Mo_Balogun_Resume.pdf) — download my resume
 - [LinkedIn](https://www.linkedin.com/in/motunrayo-balogun-157681273) — connect with me professionally
 ---

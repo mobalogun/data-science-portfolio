@@ -1,0 +1,103 @@
+state_name,year,id_stringency_tier,tier_label,verified,source_note
+California,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+California,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Illinois,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+Illinois,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Maine,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+Maine,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Massachusetts,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+Massachusetts,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Nevada,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+Nevada,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+New Hampshire,2012,0,No ID required,True,Law passed 2012 but effective date pushed to 2013
+New Hampshire,2020,1,ID requested/non-strict,False,Default: current NCSL non-strict bucket
+North Carolina,2012,0,No ID required,True,No ID required (Ballotpedia 2012)
+North Carolina,2020,0,No ID required,True,2018 law blocked by courts through 2020 general election
+Maryland,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+Maryland,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Nebraska,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+Nebraska,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+Pennsylvania,2012,1,ID requested/non-strict,True,Strict law passed but blocked by courts before election
+Pennsylvania,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Connecticut,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+Connecticut,2020,1,ID requested/non-strict,False,Default: current NCSL non-strict bucket
+New Jersey,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+New Jersey,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Iowa,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+Iowa,2020,1,ID requested/non-strict,False,Default: current NCSL non-strict bucket
+Minnesota,2012,1,ID requested/non-strict,True,Select voters required ID (Ballotpedia 2012)
+Minnesota,2020,0,No ID required,False,Default: current NCSL 'no document' bucket
+Texas,2012,1,ID requested/non-strict,True,Strict photo law blocked by courts for 2012 election
+Texas,2020,1,ID requested/non-strict,False,Default: current NCSL non-strict photo bucket
+Wisconsin,2012,1,ID requested/non-strict,True,Strict photo law blocked by courts for 2012 election
+Wisconsin,2020,2,Strict ID required,True,"Strict law finally implemented starting 2016, in effect by 2020"
+Georgia,2012,2,Strict ID required,True,Strict photo ID in effect since 2008 (Crawford v. Marion)
+Georgia,2020,2,Strict ID required,True,Same strict law remained in effect
+Indiana,2012,2,Strict ID required,True,Strict photo ID in effect since 2008 (Crawford v. Marion)
+Indiana,2020,2,Strict ID required,True,Same strict law remained in effect
+Kansas,2012,2,Strict ID required,True,Strict photo ID law took effect Jan 2012
+Kansas,2020,2,Strict ID required,True,Same strict law remained in effect
+Tennessee,2012,2,Strict ID required,True,Strict photo ID law took effect 2012
+Tennessee,2020,2,Strict ID required,True,Same strict law remained in effect
+Alabama,2012,1,ID requested/non-strict,False,Default: current classification
+Alabama,2020,1,ID requested/non-strict,False,"Default: current classification (AL law passed 2011, delayed to 2014 for preclearance -- verify 2012 status)"
+Alaska,2012,1,ID requested/non-strict,False,Default: current classification
+Alaska,2020,1,ID requested/non-strict,False,Default: current classification
+Arizona,2012,2,Strict ID required,False,Default: current classification
+Arizona,2020,2,Strict ID required,False,Default: current classification
+Arkansas,2012,1,ID requested/non-strict,False,Default: current classification
+Arkansas,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+Colorado,2012,1,ID requested/non-strict,False,Default: current classification
+Colorado,2020,1,ID requested/non-strict,False,Default: current classification
+Delaware,2012,1,ID requested/non-strict,False,Default: current classification
+Delaware,2020,1,ID requested/non-strict,False,Default: current classification
+Florida,2012,1,ID requested/non-strict,False,Default: current classification
+Florida,2020,1,ID requested/non-strict,False,Default: current classification
+Hawaii,2012,1,ID requested/non-strict,False,Default: current classification
+Hawaii,2020,1,ID requested/non-strict,False,Default: current classification
+Idaho,2012,1,ID requested/non-strict,False,Default: current classification
+Idaho,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+Kentucky,2012,1,ID requested/non-strict,False,Default: current classification
+Kentucky,2020,1,ID requested/non-strict,False,"KY moved to strict photo ID via 2021 law -- likely lower tier in 2012/2020, verify"
+Louisiana,2012,1,ID requested/non-strict,False,Default: current classification
+Louisiana,2020,1,ID requested/non-strict,False,Default: current classification
+Michigan,2012,1,ID requested/non-strict,False,Default: current classification
+Michigan,2020,1,ID requested/non-strict,False,Default: current classification
+Mississippi,2012,2,Strict ID required,False,Default: current classification
+Mississippi,2020,2,Strict ID required,False,"MS photo ID law approved 2011, implementation delayed to 2014 -- verify 2012 status"
+Missouri,2012,1,ID requested/non-strict,False,Default: current classification
+Missouri,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+Montana,2012,1,ID requested/non-strict,False,Default: current classification
+Montana,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+New Mexico,2012,0,No ID required,False,Default: current classification
+New Mexico,2020,0,No ID required,False,Default: current classification
+New York,2012,0,No ID required,False,Default: current classification
+New York,2020,0,No ID required,False,Default: current classification
+North Dakota,2012,2,Strict ID required,False,Default: current classification
+North Dakota,2020,2,Strict ID required,False,Default: current classification
+Ohio,2012,1,ID requested/non-strict,False,Default: current classification
+Ohio,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+Oklahoma,2012,1,ID requested/non-strict,False,Default: current classification
+Oklahoma,2020,1,ID requested/non-strict,False,Default: current classification
+Oregon,2012,0,No ID required,False,Default: current classification
+Oregon,2020,0,No ID required,False,Default: current classification
+Rhode Island,2012,1,ID requested/non-strict,False,Default: current classification
+Rhode Island,2020,1,ID requested/non-strict,False,"RI photo ID law took effect Jan 2012, verify if fully phased in for Nov 2012"
+South Carolina,2012,1,ID requested/non-strict,False,Default: current classification
+South Carolina,2020,1,ID requested/non-strict,False,"SC 2011 law blocked by DOJ under Section 5, implemented 2013 -- verify 2012 status"
+South Dakota,2012,1,ID requested/non-strict,False,Default: current classification
+South Dakota,2020,1,ID requested/non-strict,False,Default: current classification
+Utah,2012,1,ID requested/non-strict,False,Default: current classification
+Utah,2020,1,ID requested/non-strict,False,Default: current classification
+Vermont,2012,0,No ID required,False,Default: current classification
+Vermont,2020,0,No ID required,False,Default: current classification
+Virginia,2012,1,ID requested/non-strict,False,Default: current classification
+Virginia,2020,2,Strict ID required,False,VA moved from non-strict to strict photo ID starting 2014 -- verify
+Washington,2012,1,ID requested/non-strict,False,Default: current classification
+Washington,2020,1,ID requested/non-strict,False,Default: current classification
+West Virginia,2012,1,ID requested/non-strict,False,Default: current classification
+West Virginia,2020,1,ID requested/non-strict,False,Default: current classification
+Wyoming,2012,2,Strict ID required,False,Default: current classification
+Wyoming,2020,1,ID requested/non-strict,False,"NCSL: enacted stricter law after 2020, verify pre-2020 status"
+District of Columbia,2012,0,No ID required,False,Default: current classification
+District of Columbia,2020,0,No ID required,False,Default: current classification

@@ -99,8 +99,8 @@ This pattern doesn't hold up well once income and education are accounted for. A
 
 ### 7. Code and Transparency
 
-- **Repository/notebook:** - https://github.com/mobalogun/data-science-portfolio/tree/d274a1560e73863c6798d0e7c1ecd8488a92f895/project1
-- 
+- **Repository/notebook:** - [data-science-portfolio](project1)
+- https://github.com/mobalogun/data-science-portfolio/tree/d274a1560e73863c6798d0e7c1ecd8488a92f895/project1
 - **Data sources cited:**
   - U.S. Census Bureau. *American Community Survey 5-Year Estimates*, 2008–2012 and 2016–2020. https://www.census.gov/data/developers/data-sets/acs-5year.html
   - McDonald, M. (n.d.). *United States Elections Project: Voter Turnout Data*. Accessed via Ballotpedia, "Voter turnout in United States elections." https://ballotpedia.org/Voter_turnout_in_United_States_elections

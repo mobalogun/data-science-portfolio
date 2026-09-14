@@ -1,0 +1,103 @@
+state_name,state,year,turnout_rate,id_stringency_tier,tier_label,verified,median_hh_income,pct_bachelors_or_higher
+Alabama,01,2012,58.6,1,ID requested/non-strict,False,43160,22.3
+Alabama,01,2020,66.21,1,ID requested/non-strict,False,52035,26.2
+Alaska,02,2012,58.7,1,ID requested/non-strict,False,69917,27.5
+Alaska,02,2020,68.41,1,ID requested/non-strict,False,77790,30.0
+Arizona,04,2012,52.6,2,Strict ID required,False,50256,26.6
+Arizona,04,2020,65.27,2,Strict ID required,False,61529,30.3
+Arkansas,05,2012,50.7,1,ID requested/non-strict,False,40531,19.8
+Arkansas,05,2020,55.86,1,ID requested/non-strict,False,49475,23.8
+California,06,2012,55.1,0,No ID required,True,61400,30.5
+California,06,2020,67.41,0,No ID required,False,78672,34.7
+Colorado,08,2012,69.9,1,ID requested/non-strict,False,58244,36.7
+Colorado,08,2020,75.51,1,ID requested/non-strict,False,75231,41.6
+Connecticut,09,2012,61.3,1,ID requested/non-strict,True,69519,36.2
+Connecticut,09,2020,70.07,1,ID requested/non-strict,False,79855,40.0
+Delaware,10,2012,62.3,1,ID requested/non-strict,False,60119,28.5
+Delaware,10,2020,70.0,1,ID requested/non-strict,False,69110,32.7
+District of Columbia,11,2012,61.5,0,No ID required,False,64267,51.2
+District of Columbia,11,2020,63.69,0,No ID required,False,90842,59.8
+Florida,12,2012,62.8,1,ID requested/non-strict,False,47309,26.2
+Florida,12,2020,71.17,1,ID requested/non-strict,False,57703,30.5
+Georgia,13,2012,59.0,2,Strict ID required,True,49604,27.8
+Georgia,13,2020,67.72,2,Strict ID required,True,61224,32.2
+Hawaii,15,2012,44.2,1,ID requested/non-strict,False,67492,29.6
+Hawaii,15,2020,57.0,1,ID requested/non-strict,False,83173,33.6
+Idaho,16,2012,59.8,1,ID requested/non-strict,False,47015,24.7
+Idaho,16,2020,67.15,1,ID requested/non-strict,False,58915,28.7
+Illinois,17,2012,58.9,0,No ID required,True,56853,31.1
+Illinois,17,2020,66.84,0,No ID required,False,68428,35.5
+Indiana,18,2012,55.2,2,Strict ID required,True,48374,23.0
+Indiana,18,2020,60.66,2,Strict ID required,True,58235,27.2
+Iowa,19,2012,70.3,1,ID requested/non-strict,True,51129,25.3
+Iowa,19,2020,72.85,1,ID requested/non-strict,False,61836,29.3
+Kansas,20,2012,56.9,2,Strict ID required,True,51273,30.0
+Kansas,20,2020,65.79,2,Strict ID required,True,61091,33.9
+Kentucky,21,2012,55.7,1,ID requested/non-strict,False,42610,21.0
+Kentucky,21,2020,64.51,1,ID requested/non-strict,False,52238,25.0
+Louisiana,22,2012,60.2,1,ID requested/non-strict,False,44673,21.4
+Louisiana,22,2020,63.67,1,ID requested/non-strict,False,50800,24.9
+Maine,23,2012,68.2,0,No ID required,True,48219,27.3
+Maine,23,2020,75.51,0,No ID required,False,59489,32.5
+Maryland,24,2012,66.6,1,ID requested/non-strict,True,72999,36.3
+Maryland,24,2020,70.41,0,No ID required,False,87063,40.9
+Massachusetts,25,2012,65.9,0,No ID required,True,66658,39.0
+Massachusetts,25,2020,71.58,0,No ID required,False,84385,44.5
+Michigan,26,2012,64.7,1,ID requested/non-strict,False,48471,25.5
+Michigan,26,2020,73.37,1,ID requested/non-strict,False,59234,30.0
+Minnesota,27,2012,76.0,1,ID requested/non-strict,True,59126,32.2
+Minnesota,27,2020,79.57,0,No ID required,False,73382,36.8
+Mississippi,28,2012,59.3,2,Strict ID required,False,38882,20.0
+Mississippi,28,2020,59.67,2,Strict ID required,False,46511,22.8
+Missouri,29,2012,62.2,1,ID requested/non-strict,False,47333,25.8
+Missouri,29,2020,65.74,1,ID requested/non-strict,False,57290,29.9
+Montana,30,2012,62.5,1,ID requested/non-strict,False,45456,28.5
+Montana,30,2020,72.33,1,ID requested/non-strict,False,56539,33.1
+Nebraska,31,2012,60.3,1,ID requested/non-strict,True,51381,28.1
+Nebraska,31,2020,69.13,1,ID requested/non-strict,False,63015,32.5
+Nevada,32,2012,56.4,0,No ID required,True,54083,22.2
+Nevada,32,2020,65.25,0,No ID required,False,62043,25.5
+New Hampshire,33,2012,70.2,0,No ID required,True,64925,33.4
+New Hampshire,33,2020,74.58,1,ID requested/non-strict,False,77923,37.6
+New Jersey,34,2012,61.5,1,ID requested/non-strict,True,71637,35.4
+New Jersey,34,2020,73.87,0,No ID required,False,85245,40.7
+New Mexico,35,2012,54.6,0,No ID required,False,44886,25.6
+New Mexico,35,2020,60.97,0,No ID required,False,51243,28.1
+New York,36,2012,53.1,0,No ID required,False,57683,32.8
+New York,36,2020,63.03,0,No ID required,False,71117,37.5
+North Carolina,37,2012,64.8,0,No ID required,True,46450,26.8
+North Carolina,37,2020,71.2,0,No ID required,True,56642,32.0
+North Dakota,38,2012,59.8,2,Strict ID required,False,51641,27.1
+North Dakota,38,2020,64.02,2,Strict ID required,False,65315,30.7
+Ohio,39,2012,64.5,1,ID requested/non-strict,False,48246,24.7
+Ohio,39,2020,66.85,1,ID requested/non-strict,False,58116,28.9
+Oklahoma,40,2012,49.2,1,ID requested/non-strict,False,44891,23.2
+Oklahoma,40,2020,54.84,1,ID requested/non-strict,False,53840,26.1
+Oregon,41,2012,63.1,0,No ID required,False,50036,29.2
+Oregon,41,2020,74.28,0,No ID required,False,65667,34.4
+Pennsylvania,42,2012,59.5,1,ID requested/non-strict,True,52267,27.0
+Pennsylvania,42,2020,70.69,0,No ID required,False,63627,32.3
+Rhode Island,44,2012,58.0,1,ID requested/non-strict,False,56102,30.8
+Rhode Island,44,2020,64.75,1,ID requested/non-strict,False,70305,35.0
+South Carolina,45,2012,56.3,1,ID requested/non-strict,False,44623,24.6
+South Carolina,45,2020,64.01,1,ID requested/non-strict,False,54864,29.0
+South Dakota,46,2012,59.3,1,ID requested/non-strict,False,49091,26.0
+South Dakota,46,2020,65.21,1,ID requested/non-strict,False,59896,29.3
+Tennessee,47,2012,51.9,2,Strict ID required,True,44140,23.5
+Tennessee,47,2020,59.59,2,Strict ID required,True,54833,28.2
+Texas,48,2012,49.6,1,ID requested/non-strict,True,51563,26.3
+Texas,48,2020,60.24,1,ID requested/non-strict,False,63826,30.7
+Utah,49,2012,55.5,1,ID requested/non-strict,False,58164,29.9
+Utah,49,2020,67.91,1,ID requested/non-strict,False,74197,34.7
+Vermont,50,2012,60.7,0,No ID required,False,54168,34.2
+Vermont,50,2020,73.5,0,No ID required,False,63477,39.7
+Virginia,51,2012,66.1,1,ID requested/non-strict,False,63636,34.7
+Virginia,51,2020,71.99,2,Strict ID required,False,76398,39.5
+Washington,53,2012,64.8,1,ID requested/non-strict,False,59374,31.6
+Washington,53,2020,75.17,1,ID requested/non-strict,False,77006,36.7
+West Virginia,54,2012,46.3,1,ID requested/non-strict,False,40400,17.9
+West Virginia,54,2020,57.0,1,ID requested/non-strict,False,48037,21.3
+Wisconsin,55,2012,72.9,1,ID requested/non-strict,True,52627,26.4
+Wisconsin,55,2020,75.5,2,Strict ID required,True,63293,30.8
+Wyoming,56,2012,58.6,2,Strict ID required,False,56573,24.3
+Wyoming,56,2020,64.16,1,ID requested/non-strict,False,65304,28.2

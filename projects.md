@@ -1,7 +1,7 @@
 # Projects
 This section documents my data science projects, research questions, and data stories I create throughout the semester.
 ---
-[Project 1](#Project-1-Voter-ID-Laws-and-Voter-Turnout) · [Project 2](#Project-2-Predicting-Supreme-Court-Case-Outcomes)
+[Project 1](#project-1-voter-id-laws-and-voter-turnout) · [Project 2](#project-2-predicting-supreme-court-case-outcomes)
 ### Project 1: Voter ID Laws and Voter Turnout
 
 **Jump to:** [Problem Definition](#1-problem-definition) · [Data Description](#2-data-description) · [Data Cleaning](#3-data-cleaning-and-preparation) · [Visualizations](#4-visualizations-and-insights) · [Storytelling](#5-storytelling-and-narrative) · [Limitations](#6-limitations-ethics-and-reflection) · [Code & Sources](#7-code-and-transparency)
@@ -76,7 +76,7 @@ Average turnout drops in a consistent step pattern as stringency increases, in b
 
 The gap between "no ID" and "strict ID" states is nearly identical across the two years — about 4.4 percentage points in 2012 and 4.3 points in 2020 — even though national turnout rose substantially between the two elections. This stability suggests the pattern isn't just an artifact of one unusually high- or low-turnout year.
 
-### 5. Storytelling 
+### 5. Storytelling and Narrative
 
 > **Headline finding:** Turnout drops step-wise as voter ID stringency increases in both 2012 and 2020, but that pattern shrinks by more than 75% once state income and education levels are controlled for, suggesting socioeconomic differences between states explain most of the raw gap.
 

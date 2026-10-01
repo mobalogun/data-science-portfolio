@@ -117,10 +117,9 @@ This pattern doesn't hold up well once income and education are accounted for. A
 ---
 ### Project 2: Predicting Supreme Court Case Outcomes
 
-**Jump to:** [Problem Definition](#1-problem-definition-2) · [Data Description](#2-data-description-2) · [Data Cleaning](#3-data-cleaning-and-preparation-2) · [Visualizations](#4-visualizations-and-insights-2) · [Baseline & Models](#5-baseline-and-model-development) · [Evaluation](#6-model-evaluation-and-selection) · [Interpretation](#7-model-interpretation-and-insights) · [Limitations](#8-limitations-ethics-and-reflection-2) · [Code & Sources](#9-code-and-transparency-2)
+**Jump to:** [Problem Definition](#1a-problem-definition) · [Data Description](#2a-data-description) · [Data Cleaning](#3a-data-cleaning-and-preparation) · [Visualizations](#4a-visualizations-and-insights) · [Baseline & Models](#5-baseline-and-model-development) · [Evaluation](#6-model-evaluation-and-selection) · [Interpretation](#7-model-interpretation-and-insights) · [Limitations](#8a-limitations-ethics-and-reflection) · [Code & Sources](#9a-code-and-transparency)
 
-### 1. Problem Definition
-
+### 1a. Problem Definition
 **Research question:** Can characteristics of a U.S. Supreme Court case that are known *before* the Court rules — the legal issue area, the direction of the lower court's ruling, how the case reached the Court, and similar procedural facts — predict whether the petitioner (the party asking the Court to review the case) wins?
 
 **Target variable:** `partyWinning` — 1 if the petitioner wins, 0 if the petitioner does not win. This is a binary **classification** problem.
@@ -131,7 +130,7 @@ This pattern doesn't hold up well once income and education are accounted for. A
 
 Predicting judicial behavior has real research history behind it. Katz et al. (2017) built a random forest model on pre-decision Supreme Court Database features across nearly two centuries of cases, reaching about 70% accuracy at the case level. Earlier, Ruger et al. (2004) found a simple statistical model using general case characteristics beat a panel of legal experts at predicting a full Supreme Court term (75% vs. 59.1% accuracy) — a notable result given the model used none of the specific legal reasoning the experts relied on. More recently, Davids (2024) compared several ML algorithms on similar features and found the stated reason certiorari was granted, and the category of the petitioner and appellee, were among the most predictive features — a finding my own model independently reproduces (see Section 7). Full citations are in Section 9.
 
-### 2. Data Description
+### 2a. Data Description
 
 **Source:** the [Supreme Court Database (SCDB)](http://scdb.la.psu.edu), 2026 Release 01, case-centered version. The SCDB is the standard academic dataset for quantitative research on the Court.
 
@@ -147,7 +146,7 @@ Predicting judicial behavior has real research history behind it. Katz et al. (2
 
 **A key limitation of the source itself:** the SCDB only covers cases that received a full, signed opinion — it doesn't include the much larger number of cases the Court declines to hear. My conclusions apply only to cases the Court already chose to decide, not to litigation in general.
 
-### 3. Data Cleaning and Preparation
+### 3a. Data Cleaning and Preparation
 
 **Cleaning the target:** I dropped 5 cases with an unclear or missing outcome code (`partyWinning = 2` or missing) — too small and ambiguous a group to safely relabel.
 
@@ -159,7 +158,7 @@ Predicting judicial behavior has real research history behind it. Katz et al. (2
 
 **Train/test split:** an 80/20 stratified random split, preserving the ~68.5%/31.5% class balance in both sets. I also ran a **time-based split** (train on 2000–2019, test on 2020–2025) as a stress test — see Section 6.
 
-### 4. Visualizations and Insights
+### 4a. Visualizations and Insights
 
 **Class balance:** petitioners won 68.5% of cases — a meaningful imbalance that I had to account for throughout modeling and evaluation, not just note in passing.
 
@@ -216,7 +215,7 @@ Looking at the cases the random forest got most confidently wrong showed no sing
 
 **What this can, and can't, tell us:** a handful of procedural, pre-decision case facts carry real, non-random signal about who wins, echoing prior research. But the model can't explain *why* a case comes out the way it does, and — per the time-based split result — it shouldn't be trusted to project accurately into future terms.
 
-### 8. Limitations, Ethics, and Reflection
+### 8a. Limitations, Ethics, and Reflection
 
 - **Selection bias in the data itself:** the SCDB only includes cases the Court chose to fully hear, not the much larger set of petitions it declines. My conclusions describe that already-selected population, not litigation broadly.
 - **Consequences of errors:** if a tool like this were used to inform a real decision (e.g., whether an appeal is worth pursuing), a false positive could encourage a costly appeal unlikely to succeed, while a false negative could discourage a meritorious one. Given the model's modest accuracy, that's a real risk, not a hypothetical one.
@@ -224,7 +223,7 @@ Looking at the cases the random forest got most confidently wrong showed no sing
 - **What I'd explore next:** incorporating the text of party briefs or lower court opinions (a direction Davids (2024) also suggests), engineering features around individual justice ideology scores, and modeling the shift in outcome rates over time explicitly rather than treating `term` as a simple numeric feature.
 - **What a user should understand before relying on this model:** it was trained on a specific, non-random sample of cases (2000–2025 only, already selected by the Court), its accuracy is only modestly better than always guessing the majority outcome, and it performs meaningfully worse when asked to predict genuinely future cases.
 
-### 9. Code and Transparency
+### 9a. Code and Transparency
 
 - **Repository/notebooks:** [Please click here to view the code!](https://github.com/mobalogun/data-science-portfolio/tree/main/project2)
 - **Data source:** Supreme Court Database, 2026 Release 01, case-centered, http://scdb.la.psu.edu

@@ -2,7 +2,7 @@
 This section documents my data science projects, research questions, and data stories I create throughout the semester.
 ---
 [Project 1](#project-1) · [Project 2](#project-2)
-## Project 1: Voter ID Laws and Voter Turnout
+### Project 1: Voter ID Laws and Voter Turnout
 
 **Jump to:** [Problem Definition](#1-problem-definition) · [Data Description](#2-data-description) · [Data Cleaning](#3-data-cleaning-and-preparation) · [Visualizations](#4-visualizations-and-insights) · [Storytelling](#5-storytelling-and-narrative) · [Limitations](#6-limitations-ethics-and-reflection) · [Code & Sources](#7-code-and-transparency)
 
@@ -115,7 +115,7 @@ This pattern doesn't hold up well once income and education are accounted for. A
 
 
 ---
-## Project 2: Predicting Supreme Court Case Outcomes
+### Project 2: Predicting Supreme Court Case Outcomes
 
 **Jump to:** [Problem Definition](#1-problem-definition-2) · [Data Description](#2-data-description-2) · [Data Cleaning](#3-data-cleaning-and-preparation-2) · [Visualizations](#4-visualizations-and-insights-2) · [Baseline & Models](#5-baseline-and-model-development) · [Evaluation](#6-model-evaluation-and-selection) · [Interpretation](#7-model-interpretation-and-insights) · [Limitations](#8-limitations-ethics-and-reflection-2) · [Code & Sources](#9-code-and-transparency-2)
 

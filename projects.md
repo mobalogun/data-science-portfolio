@@ -1,8 +1,8 @@
 # Projects
 This section documents my data science projects, research questions, and data stories I create throughout the semester.
 ---
-[Project 1](#Project-1:-Voter-ID-Laws-and-Voter-Turnout) · [Project 2](#project-2)
-### Project 1: Voter ID Laws and Voter Turnout
+[Project 1](#Project-1-Voter-ID-Laws-and-Voter-Turnout) · [Project 2](#project-2)
+### Project 1 Voter ID Laws and Voter Turnout
 
 **Jump to:** [Problem Definition](#1-problem-definition) · [Data Description](#2-data-description) · [Data Cleaning](#3-data-cleaning-and-preparation) · [Visualizations](#4-visualizations-and-insights) · [Storytelling](#5-storytelling-and-narrative) · [Limitations](#6-limitations-ethics-and-reflection) · [Code & Sources](#7-code-and-transparency)
 
